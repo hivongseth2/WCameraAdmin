@@ -15,12 +15,11 @@ import { useEffect, useState } from 'react';
 import '../style/general.css';
 import axios from 'axios';
 
-const ProductForm = ({ product, closeForm, trigger }) => {
+const ProductForm = ({ product, closeForm, trigger, handleUpdate }) => {
   const [item, setItem] = useState(product || {});
-  const initialDate = product ? new Date(product.importDate) : new Date();
-
-  //   const date = new Date(item.importDate);
+  const initialDate = product && product.importDate ? new Date(product.importDate) : new Date();
   const [importDateStr, setImportDateStr] = useState(initialDate.toISOString().split('T')[0]);
+
   const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState('');
   const [brands, setBrands] = useState([]);
@@ -35,18 +34,19 @@ const ProductForm = ({ product, closeForm, trigger }) => {
   const [productName, setProductName] = useState(item.productName || '');
   const [supp, setSupp] = useState('');
   const [suppliers, setSuppliers] = useState([]);
+  const [quantity, setQuantity] = useState(item.quantity);
 
   //   ===========
-  const getRandomId = async () => {
-    try {
-      const response = await axios.get('http://localhost:8521/api/v1/products/randomId');
-      return response.data; // Use response.data to access the response body
-      // return response.data; // You can return the data if needed
-    } catch (err) {
-      console.error('Error fetching randomId:', err);
-      return null;
-    }
-  };
+  // const getRandomId = async () => {
+  //   try {
+  //     const response = await axios.get('http://localhost:8521/api/v1/products/randomId');
+  //     return response.data; // Use response.data to access the response body
+  //     // return response.data; // You can return the data if needed
+  //   } catch (err) {
+  //     console.error('Error fetching randomId:', err);
+  //     return null;
+  //   }
+  // };
 
   const uploadImage = () => {
     const formData = new FormData();
@@ -78,31 +78,67 @@ const ProductForm = ({ product, closeForm, trigger }) => {
 
   useEffect(() => {}, [image]);
 
+  // const handleSave = async () => {
+  //   try {
+  //     const updatedItem = {
+  //       name: productName,
+  //       modelYear: importDateStr,
+  //       status: 1,
+  //       price: price || 0,
+  //       quantity: quantity || 0,
+  //       brand: {
+  //         brandId: brand,
+  //       },
+  //       category: {
+  //         categoryId: category,
+  //       },
+  //     };
+  //     console.log('images : ', brand);
+  //     console.log('images : ', category);
+  //     console.log('images : ', updatedItem.quantity);
+  //     console.log('images : ', quantity);
+
+  //     // Gửi dữ liệu lên server
+  //     await axios.post('http://localhost:8081/product/add', updatedItem);
+  //     trigger();
+  //     closeForm();
+  //     console.log('save success');
+  //   } catch (err) {
+  //     console.error('Error saving product:', err);
+  //   }
+  // };
+
   const handleSave = async () => {
-    let id = '';
-    if (!item.id) {
-      id = await getRandomId();
-    }
-    const updatedItem = {
-      ...(item.id ? { id: item.id } : { id }),
-      brand,
-      importDate: new Date(importDateStr),
-      images,
-      price,
-      priceImport,
-      productName,
-      category: categories.find((cate) => cate.id === category),
-      supplier: suppliers.find((supplier) => supp === supplier.id),
-    };
-    console.log('item send : ', updatedItem);
     try {
-      await axios.post('http://localhost:8521/api/v1/products/saveOrUpdate', updatedItem);
+      const updatedItem = {
+        id: item.id,
+        name: productName,
+        modelYear: importDateStr,
+        status: 1,
+        price: price || 0,
+        quantity: quantity || 0,
+        brand: {
+          brandId: brand,
+        },
+        category: {
+          categoryId: category,
+        },
+      };
+
+      if (product && product.id) {
+        await axios.put(`http://localhost:8081/product/update/${product.id}`, updatedItem);
+      } else {
+        await axios.post('http://localhost:8081/product/add', updatedItem);
+      }
+
       trigger();
       closeForm();
+      console.log('Save success');
     } catch (err) {
       console.error('Error saving product:', err);
     }
   };
+
   // remove in list tạm
   const removeInListImg = (item, index) => {
     const updatedImage = [...image];
@@ -132,27 +168,24 @@ const ProductForm = ({ product, closeForm, trigger }) => {
 
   //   fetch category
   useEffect(() => {
-    // Fetch categories from the API when the component mounts
     axios
-      .get('http://localhost:8521/api/v1/category/getAll')
+      .get('http://localhost:8081/categories')
       .then((response) => {
         setCategories(response.data);
-        setCategory(product ? product.category.id : '');
-
-        return axios.get('http://localhost:8521/api/v1/suppliers/getAll');
-      })
-      .then((supplierResponse) => {
-        setSuppliers(supplierResponse.data);
-        setSupp(product ? product.supplier.id : '');
-        // sửa link lại
-        return axios.get('http://localhost:8521/api/v1/brands/getAll');
+        // setCategory(product ? product.categories.categoriesId : '');
+        console.log('category : ', category);
+        console.log('ca : ', categories);
+        return axios.get('http://localhost:8081/brand');
       })
       .then((brandResponse) => {
         setBrands(brandResponse.data);
-        setBrand(product ? product.brand : '');
+
+        // setBrand(product ? product.brand.id : '');
+        console.log('brand : ', brand);
+        console.log('brands : ', brands);
       })
       .catch((error) => {
-        console.error('Error fetching categories:', error);
+        console.error('Error fetching categories or brands:', error);
       });
   }, []);
 
@@ -162,7 +195,7 @@ const ProductForm = ({ product, closeForm, trigger }) => {
   };
 
   return (
-    <Grid container justifyContent="center" alignItems="center" position={'relative'} top={'-40%'}>
+    <Grid container justifyContent="center" alignItems="center" position={'relative'} top={'-30%'}>
       <Grid item xs={8} height={'100%'}>
         <Paper
           elevation={3}
@@ -187,8 +220,8 @@ const ProductForm = ({ product, closeForm, trigger }) => {
                       <em>None</em>
                     </MenuItem>
                     {brands.map((brand) => (
-                      <MenuItem key={brand.id} value={brand.id}>
-                        {brand.categoryName}
+                      <MenuItem key={brand.brandId} value={brand.brandId}>
+                        {brand.name}
                       </MenuItem>
                     ))}
                   </Select>
@@ -204,8 +237,8 @@ const ProductForm = ({ product, closeForm, trigger }) => {
                       <em>None</em>
                     </MenuItem>
                     {categories.map((category) => (
-                      <MenuItem key={category.id} value={category.id}>
-                        {category.categoryName}
+                      <MenuItem key={category.categoryId} value={category.categoryId}>
+                        {category.name}
                       </MenuItem>
                     ))}
                   </Select>
@@ -306,6 +339,12 @@ const ProductForm = ({ product, closeForm, trigger }) => {
               </Grid>
               <Grid item xs={6}>
                 <FormControl fullWidth>
+                  <InputLabel htmlFor="quantity">Quantity</InputLabel>
+                  <Input id="quantity" type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                </FormControl>
+              </Grid>
+              <Grid item xs={6}>
+                <FormControl fullWidth>
                   <InputLabel htmlFor="productName">Product Name</InputLabel>
                   <Input
                     id="productName"
@@ -316,7 +355,7 @@ const ProductForm = ({ product, closeForm, trigger }) => {
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12}>
+              {/* <Grid item xs={12}>
                 <FormControl fullWidth>
                   <InputLabel htmlFor="category">Nhà cung cấp</InputLabel>
 
@@ -331,7 +370,7 @@ const ProductForm = ({ product, closeForm, trigger }) => {
                     ))}
                   </Select>
                 </FormControl>
-              </Grid>
+              </Grid> */}
 
               <Grid item xs={6}>
                 <Button onClick={handleSave} color="success">

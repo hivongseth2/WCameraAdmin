@@ -112,14 +112,16 @@ export default function ProductsPage() {
   // header
 
   const TABLE_HEAD = [
-    { id: 'productName', label: 'Product Name', alignRight: false },
+    { id: 'name', label: 'Name', alignRight: false },
     { id: 'brand', label: 'Brand', alignRight: false },
     { id: 'quantity', label: 'Quantity', alignRight: false },
     { id: 'price', label: 'Price', alignRight: false },
-    { id: 'priceImport', label: 'Price Import', alignRight: false },
-    { id: 'id', label: 'ID', alignRight: false },
-    { id: 'category', label: 'Category', alignRight: false },
-    { id: 'supplier', label: 'Supplier', alignRight: false },
+    { id: 'modelYear', label: 'Year Import', alignRight: false },
+    { id: 'productId', label: 'ID', alignRight: false },
+    { id: 'categoryName', label: 'Category Name', alignRight: false },
+    { id: 'status', label: 'Status', alignRight: false },
+
+    // { id: 'supplier', label: 'Supplier', alignRight: false },
     { id: '' },
   ];
 
@@ -127,10 +129,11 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8521/api/v1/products/getAll');
+        const response = await fetch('http://localhost:8081/product');
         if (response.ok) {
           const data = await response.json();
           setProducts(data);
+          console.log(data);
         } else {
           console.error('Failed to fetch data');
         }
@@ -218,6 +221,40 @@ export default function ProductsPage() {
 
   const isNotFound = !filteredUsers.length && !!filterName;
   // ========
+
+  const handleUpdate = async (productId, name, quantity, price, modelYear, categoryName, status, brandName) => {
+    try {
+      const response = await fetch(`http://localhost:8081/product/update/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: name,
+          quantity: quantity,
+          price: price,
+          modelYear: modelYear,
+          categoryName: categoryName,
+          status: status,
+          brandName: brandName,
+          productId: productId,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Lỗi khi cập nhật thông tin sản phẩm:', response.status, response.statusText);
+        return;
+      }
+
+      const responseData = await response.json();
+      console.log(responseData);
+      trigger();
+      closeForm();
+    } catch (error) {
+      console.error('Lỗi khi cập nhật thông tin sản phẩm:', error.message);
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -265,7 +302,7 @@ export default function ProductsPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, productName, brand, quantity, price, priceImport, category, supplier } = row;
+                    const { id, name, quantity, price, modelYear, categoryName, productId, status, brandName } = row;
 
                     const selectedProduct = selected.indexOf(id) !== -1;
 
@@ -277,17 +314,18 @@ export default function ProductsPage() {
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" noWrap>
-                              {productName}
+                              {name}
                             </Typography>
                           </Stack>
                         </TableCell>
-                        <TableCell align="left">{brand.name}</TableCell>
+                        <TableCell align="left">{brandName}</TableCell>
                         <TableCell align="left">{quantity}</TableCell>
                         <TableCell align="left">{price}</TableCell>
-                        <TableCell align="left">{priceImport}</TableCell>
-                        <TableCell align="left">{id}</TableCell>
-                        <TableCell align="left">{category.categoryName}</TableCell>
-                        <TableCell align="left">{supplier.name}</TableCell>
+                        <TableCell align="left">{modelYear}</TableCell>
+                        <TableCell align="left">{productId}</TableCell>
+                        <TableCell align="left">{categoryName}</TableCell>
+                        <TableCell align="left">{status}</TableCell>
+
                         <TableCell align="right">
                           <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, row)}>
                             <Iconify icon={'eva:more-vertical-fill'} />
@@ -360,7 +398,7 @@ export default function ProductsPage() {
           },
         }}
       >
-        <MenuItem onClick={() => handleEditProduct()}>
+        <MenuItem onClick={() => handleEditProduct()} sx={{ color: 'cyan' }}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
@@ -370,13 +408,22 @@ export default function ProductsPage() {
           Delete
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }} onClick={() => OpenSpecEdit()}>
+        {/* <MenuItem sx={{ color: 'error.main' }} onClick={() => OpenSpecEdit()}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Chỉnh sửa thông số
-        </MenuItem>
+        </MenuItem> */}
       </Popover>
 
-      {isEditing ? <ProductForm product={editProduct} closeForm={handleCloseProduct} trigger={trigger} /> : null}
+      {/* {isEditing ? <ProductForm product={editProduct} closeForm={handleCloseProduct} trigger={trigger} /> : null} */}
+
+      {isEditing ? (
+        <ProductForm
+          product={editProduct}
+          closeForm={handleCloseProduct}
+          trigger={trigger}
+          handleUpdate={handleUpdate} // Truyền hàm handleUpdate vào props của ProductForm
+        />
+      ) : null}
 
       {specEdit ? (
         <div
