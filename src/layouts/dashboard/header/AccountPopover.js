@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // @mui
+import { Navigate, useRoutes } from 'react-router-dom';
+
 import { alpha } from '@mui/material/styles';
 import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
 // mocks_
@@ -26,7 +28,11 @@ const MENU_OPTIONS = [
 
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
-
+  const [user, setUser] = useState({});
+  useEffect(() => {
+    const temp = JSON.parse(localStorage.getItem('data'));
+    setUser(temp);
+  }, []);
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
@@ -35,6 +41,10 @@ export default function AccountPopover() {
     setOpen(null);
   };
 
+  const logout = () => {
+    localStorage.removeItem('data');
+    window.location.href = '/login';
+  };
   return (
     <>
       <IconButton
@@ -78,26 +88,26 @@ export default function AccountPopover() {
       >
         <Box sx={{ my: 1.5, px: 2.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {account.displayName}
+            {user.firstName} {user.lastName}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {account.email}
+            {user.email}
           </Typography>
         </Box>
 
         <Divider sx={{ borderStyle: 'dashed' }} />
-
+        {/* 
         <Stack sx={{ p: 1 }}>
           {MENU_OPTIONS.map((option) => (
             <MenuItem key={option.label} onClick={handleClose}>
               {option.label}
             </MenuItem>
           ))}
-        </Stack>
+        </Stack> */}
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <MenuItem onClick={handleClose} sx={{ m: 1 }}>
+        <MenuItem onClick={logout} sx={{ m: 1 }}>
           Logout
         </MenuItem>
       </Popover>

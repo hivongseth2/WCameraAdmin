@@ -223,36 +223,37 @@ export default function ProductsPage() {
   // ========
 
   const handleUpdate = async (productId, name, quantity, price, modelYear, categoryName, status, brandName) => {
-    try {
-      const response = await fetch(`http://localhost:8081/product/update/${productId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name,
-          quantity: quantity,
-          price: price,
-          modelYear: modelYear,
-          categoryName: categoryName,
-          status: status,
-          brandName: brandName,
-          productId: productId,
-        }),
-      });
+    console.log(productId, name, quantity, price, modelYear, categoryName, status, brandName);
+    // try {
+    //   const response = await fetch(`http://localhost:8081/product/update/${productId}`, {
+    //     method: 'PUT',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //       name: name,
+    //       quantity: quantity,
+    //       price: price,
+    //       modelYear: modelYear,
+    //       categoryName: categoryName,
+    //       status: status,
+    //       brandName: brandName,
+    //       productId: productId,
+    //     }),
+    //   });
 
-      if (!response.ok) {
-        console.error('Lỗi khi cập nhật thông tin sản phẩm:', response.status, response.statusText);
-        return;
-      }
+    //   if (!response.ok) {
+    //     console.error('Lỗi khi cập nhật thông tin sản phẩm:', response.status, response.statusText);
+    //     return;
+    //   }
 
-      const responseData = await response.json();
-      console.log(responseData);
-      trigger();
-      closeForm();
-    } catch (error) {
-      console.error('Lỗi khi cập nhật thông tin sản phẩm:', error.message);
-    }
+    //   const responseData = await response.json();
+    //   console.log(responseData);
+    //   trigger();
+    //   // closeForm();
+    // } catch (error) {
+    //   console.error('Lỗi khi cập nhật thông tin sản phẩm:', error.message);
+    // }
   };
 
   return (
