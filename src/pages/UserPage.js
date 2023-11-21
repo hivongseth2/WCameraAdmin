@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useEffect, useState, useContext } from 'react';
-
 import { sentenceCase } from 'change-case';
 // @mui
 import {
@@ -26,6 +25,7 @@ import {
 // components
 
 import CustomerForm from '../view/CustomerForm';
+import CustomerAddForm from '../view/CustomerAddForm';
 
 import Label from '../components/label';
 import Iconify from '../components/iconify';
@@ -42,7 +42,8 @@ const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
   { id: 'email', label: 'Email', alignRight: false },
   { id: 'phone', label: 'Phone', alignRight: false },
-  { id: 'address', label: 'Address', alignRight: false },
+  { id: 'city', label: 'City', alignRight: false },
+  { id: 'street', label: 'Street', alignRight: false },
   { id: 'customerType', label: 'Customer Type', alignRight: false },
   { id: 'id', label: 'ID', alignRight: false },
   { id: 'dateOfBirth', label: 'Date Of Birth', alignRight: false },
@@ -88,14 +89,21 @@ export default function UserPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [flag, setFlag] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
+  const [isAdding, setIsAdding] = useState(false);
+
   const trigger = () => {
     setFlag(!flag);
   };
   // form edit
   const handleEditProduct = () => {
     setOpen(null);
-
     setIsEditing(true);
+  };
+  const handleAddProduct = () => {
+    setIsAdding(true);
+  };
+  const handleCancel = () => {
+    setIsAdding(false);
   };
   const handleCloseProduct = () => {
     setIsEditing(false);
@@ -109,11 +117,10 @@ export default function UserPage() {
         'Content-Type': 'application/json',
       };
       const body = '';
-      const path = '/customer/getListCustomer';
+      const path = '/customer';
       try {
         const data = await CustomFetch(path, method, body, header);
         if (Array.isArray(data)) {
-          // Kiểm tra nếu dữ liệu trả về là một mảng
           console.log(data);
           setCustomers(data);
         }
@@ -126,6 +133,7 @@ export default function UserPage() {
   }, [flag]);
 
   const [open, setOpen] = useState(null);
+
 
   const [page, setPage] = useState(0);
 
@@ -158,12 +166,13 @@ export default function UserPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = customers.map((n) => n.id);
+      const newSelecteds = customers.map((n) => n.personId);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
   };
+  
 
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
@@ -210,9 +219,6 @@ export default function UserPage() {
           <Typography variant="h4" gutterBottom>
             User
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
-          </Button>
         </Stack>
 
         <Card>
@@ -232,14 +238,14 @@ export default function UserPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, firstName, lastName, email, phone, address, customerType, dateOfBirth } = row;
+                    const { personId, firstName, lastName, email, phone, city , street, status, dateOfBirth } = row;
 
-                    const selectedUser = selected.indexOf(id) !== -1;
+                    const selectedUser = selected.indexOf(personId) !== -1;
 
                     return (
-                      <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+                      <TableRow hover key={personId} tabIndex={-1} role="checkbox" selected={selectedUser}>
                         <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, id)} />
+                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, personId)} />
                         </TableCell>
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
@@ -251,9 +257,10 @@ export default function UserPage() {
                         </TableCell>
                         <TableCell align="left">{email}</TableCell>
                         <TableCell align="left">{phone}</TableCell>
-                        <TableCell align="left">{address}</TableCell>
-                        <TableCell align="left">{customerType}</TableCell>
-                        <TableCell align="left">{id}</TableCell>
+                        <TableCell align="left">{city}</TableCell>
+                        <TableCell align="left">{street}</TableCell>
+                        <TableCell align="left">{status}</TableCell>
+                        <TableCell align="left">{personId}</TableCell>
                         <TableCell align="left">{new Date(dateOfBirth).toLocaleDateString('vi-VN')}</TableCell>
                         <TableCell align="right">
                           <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, row)}>
@@ -337,7 +344,7 @@ export default function UserPage() {
           Delete
         </MenuItem>
       </Popover>
-
+      {isAdding ? <CustomerAddForm closeForm={handleCancel} trigger={trigger} /> : null}
       {isEditing ? <CustomerForm user={editCustomer} closeForm={handleCloseProduct} trigger={trigger} /> : null}
     </>
   );

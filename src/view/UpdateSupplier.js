@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Container, Typography, TextField, Button, Stack } from '@mui/material';
 
-const AddSupplier = ({ onClose }) => {
-  const [supplierInfo, setSupplierInfo] = useState({
+const UpdateSupplier = ({ onClose, initialSupplierInfo }) => {
+    console.log(initialSupplierInfo);
+  const [supplierInfo, setSupplierInfo] = useState(initialSupplierInfo || {
     name: '',
-    image: ''
+    image: '',
   });
 
   const handleChange = (event) => {
@@ -13,28 +14,27 @@ const AddSupplier = ({ onClose }) => {
       ...prevInfo,
       [name]: value,
     }));
-    console.log(supplierInfo);
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
     const requestOptions = {
-      method: 'POST',
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(supplierInfo),
     };
-
-    try {
-      const response = await fetch('http://localhost:8081/brand/add', requestOptions);
-      if (response.ok) {
-        onClose();
-        console.log('Supplier added successfully.');
-      } else {
-        console.error('Failed to add supplier.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
+    fetch(`http://localhost:8081/brand/update/${supplierInfo.brandId}`, requestOptions)
+      .then((response) => {
+        if (response.ok) {
+          onClose();
+          console.log('Supplier updated successfully.');
+        } else {
+          console.error('Failed to update supplier.');
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
   };
 
   return (
@@ -62,7 +62,7 @@ const AddSupplier = ({ onClose }) => {
             fullWidth
             required
           />
-          <Button type="submit" variant="contained" color="primary">
+          <Button type="submit" variant="contained" color="primary" >
             Save
           </Button>
         </Stack>
@@ -71,4 +71,4 @@ const AddSupplier = ({ onClose }) => {
   );
 };
 
-export default AddSupplier;
+export default UpdateSupplier;

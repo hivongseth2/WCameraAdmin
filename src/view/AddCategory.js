@@ -25,12 +25,12 @@ const AddSupplier = ({ onClose }) => {
     };
 
     try {
-      const response = await fetch('http://localhost:8081/brand/add', requestOptions);
+      const response = await fetch('http://localhost:8081/categories/add', requestOptions);
       if (response.ok) {
         onClose();
-        console.log('Supplier added successfully.');
+        console.log('Category added successfully.');
       } else {
-        console.error('Failed to add supplier.');
+        console.error('Failed to add Category');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -40,12 +40,12 @@ const AddSupplier = ({ onClose }) => {
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
-        Add Supplier
+        Add Category
       </Typography>
       <form onSubmit={handleSubmit}>
         <Stack spacing={2}>
           <TextField
-            label="Supplier Name"
+            label="Category Name"
             variant="outlined"
             name="name"
             value={supplierInfo.name}

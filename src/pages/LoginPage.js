@@ -1,4 +1,6 @@
 import { Helmet } from 'react-helmet-async';
+import React from 'react';
+import { toast } from 'react-toastify';
 // @mui
 import { styled } from '@mui/material/styles';
 import { Link, Container, Typography, Divider, Stack, Button } from '@mui/material';
@@ -41,7 +43,12 @@ const StyledContent = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function LoginPage() {
+
   const mdUp = useResponsive('up', 'md');
+  const showToast = {
+    success: (message) => toast.success(message),
+    error: (message) => toast.error(message),
+  };
 
   return (
     <>
@@ -98,7 +105,8 @@ export default function LoginPage() {
               </Typography>
             </Divider>
 
-            <LoginForm />
+            <LoginForm onToast={showToast} />
+
           </StyledContent>
         </Container>
       </StyledRoot>

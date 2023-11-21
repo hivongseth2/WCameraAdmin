@@ -1,6 +1,6 @@
 const CustomFetch = async (path, method, body, headers) => {
   try {
-    const url = process.env.REACT_APP_API_ENDPOINT + path;
+    const url = `http://localhost:8081${path}`; // Use template literal
     console.log(url);
     const requestOptions = {
       method,
