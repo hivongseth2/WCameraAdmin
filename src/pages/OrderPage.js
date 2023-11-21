@@ -107,9 +107,9 @@ export default function OrderPage() {
   function renderOrderListByStatus(status) {
     const filteredOrders = applySortFilter(
       orderData.filter((order1) => {
-        return Number(order1.status) === status;
-      })
-      // getComparator(order, orderBy)
+        return Number(order1.status) === Number(status);
+      }),
+      getComparator(order, orderBy)
     );
     // const filteredOrders = orderData;
     return (
